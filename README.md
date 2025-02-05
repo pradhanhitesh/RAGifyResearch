@@ -49,11 +49,3 @@
 ## Contributing  
 
 Contributions are welcome! Feel free to submit a pull request or open an issue.  
-
-## License  
-
-📜 MIT License  
-
----
-
-Would you like me to add anything specific, such as examples or screenshots? 😊
