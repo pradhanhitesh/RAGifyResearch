@@ -24,16 +24,22 @@
    cd RAGifyResearch  
    ```
 
-2. **Install Dependencies**  
+2. **Create virtual enviroment**
+   ```sh
+   python3.8 -m venv venv
+   source venv/bin/activate 
+   ```
+
+3. **Install Dependencies**  
    ```sh
    pip install -r requirements.txt  
    ```
 
-3. **Run the System: First Time**  
+4. **Run the System: First Time**  
    ```sh
    python main.py --create-db path/to/pdf/dir db_name
    ```
-4. **Run the System: Any Time**  
+5. **Run the System: Any Time**  
    ```sh
    python main.py --load-db db_name
    ```
