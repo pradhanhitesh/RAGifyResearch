@@ -9,7 +9,7 @@ from RAGify.ingest import IngestData
 from RAGify.agents import SafetyAgent, QueryAgent, RAGAgent
 
 # Setup clients for LMS and ChromaDB
-lms_client = OpenAI(base_url="http://172.26.208.1:5555/v1", api_key="lm-studio")
+lms_client = OpenAI(base_url="http://localhost:5555/v1", api_key="lm-studio")
 chroma_client = chromadb.PersistentClient(path='assets/chroma_db')
 
 # Parse command-line arguments
