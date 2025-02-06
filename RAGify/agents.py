@@ -69,16 +69,44 @@ class QueryAgent:
 
         return " ".join(filtered_tokens)
 
-    def enhanced_query(self, query):
+    def enhanced_query(self, query, transformation_type='decomposition'):
         filtered_query = self.clean_query(query)
-        
+
+        if transformation_type == "rewrite":
+            template = """
+            TEMPLATE_TYPE: 'REWRITE'
+            PURPOSE: To make queries more specific and detailed, improving the likelihood of retrieving relevant information.
+
+            TEMPLATE: You are an AI assistant tasked with reformulating user queries to improve retrieval in a RAG system. 
+            Given the original query, rewrite it to be more specific, detailed, and likely to retrieve relevant information.
+            """
+        elif transformation_type == "step_back":
+            template = """
+            TEMPLATE_TYPE: 'STEP_BACK'
+            PURPOSE: To generate broader, more general queries that can help retrieve relevant background information.
+
+            TEMPLATE: You are an AI assistant tasked with generating broader, more general queries to improve context retrieval in a RAG system.
+            Given the original query, generate a step-back query that is more general and can help retrieve relevant background information.
+            """
+        elif transformation_type == "decomposition":
+            template = """
+            TEMPLATE_TYPE: 'DECOMPOSITION'
+            PURPOSE: To break down complex queries into simpler sub-queries for more comprehensive information retrieval.
+
+            TEMPLATE: You are an AI assistant tasked with breaking down complex queries into simpler sub-queries for a RAG system.
+            Given the original query, decompose it into 2-4 simpler sub-queries that, when answered together, would provide a comprehensive response to the original query.
+            """
+        else:
+            raise ValueError(f"Unsupported transformation_type {transformation_type}. Please use any one of ['rewrite', 'step_back', 'decomposition']")
+
         try:
             response = self.client.chat.completions.create(
                 model="lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF",
                 messages=[
                     {"role": "system", 
-                     "content": "You are a User-Query AI Agent. Enhance and structure the user input into a single-short string. \n"
-                                "Return output as Python dict, e.g., {'enhanced_query': <query goes here>}. Do not add anything else."                     
+                     "content": f"You are a User-Query AI Agent. Use the following query template {template}\n"
+                                "Return output as Python dict, e.g., {'enhanced_query': <query goes here>} if TEMPLATE_TYPE='REWRITE' or 'STEP_BACK. Do not add anything else.\n" 
+                                "Return output as Python dict, e.g., {'enhanced_query': [sub_query_1, sub_query_2, sub_query_3, sub_query_4]} if TEMPLATE_TYPE='DECOMPOSITION'"                     
                      },
                     {"role": "user", "content": filtered_query},
                 ],
@@ -86,12 +114,13 @@ class QueryAgent:
             )
             response = ast.literal_eval(response.choices[0].message.content.lower())
             return response['enhanced_query']
+        
         except Exception as e:
             return f"Error: {str(e)}"
         
 class RAGAgent:
     def __init__(self, query, database, lms_client):
-        self._query = query
+        self._query = str(query) if isinstance(query, list) else query # Handle cases when transformation_type='decomposition'
         self._database = database
         self._lms_client = lms_client
 
