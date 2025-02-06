@@ -58,6 +58,10 @@ class SafetyAgent:
             return f"error: {str(e)}"
         
 class QueryAgent:
+    """
+    Query transformation has been adopted from: 
+    https://github.com/NirDiamant/RAG_Techniques/blob/main/all_rag_techniques/query_transformations.ipynb
+    """
     def __init__(self, client):
         self.client = client
 
