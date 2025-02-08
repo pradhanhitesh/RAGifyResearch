@@ -32,15 +32,20 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def ask(ctx, *, prompt: str):
     try:
         async with ctx.typing():  # Show typing animation
-            # Generate response from LLM
-            query = QueryAgent(lms_client).enhanced_query(prompt, 'rewrite')
-            rag = RAGAgent(query, database, lms_client)
-            response = rag._generation()
+            # Assess if the query is safe
+            if SafetyAgent(lms_client).validate_query(prompt) == "no":
+                # Generate response from LLM
+                query = QueryAgent(lms_client).enhanced_query(prompt, 'rewrite')
+                rag = RAGAgent(query, database, lms_client)
+                response = rag._generation()
 
-            # Chunking the response to below 2000 characters
-            split_chunks = rag._smart_chunk(response.split("\n"))
-            for i, chunk in enumerate(split_chunks):
-                await ctx.send(chunk)
+                # Chunking the response to below 2000 characters
+                split_chunks = rag._smart_chunk(response.split("\n"))
+                for i, chunk in enumerate(split_chunks):
+                    await ctx.send(chunk)
+            
+            else:
+                await ctx.send(f"Safety Violation has been detected! No response will be generated.")
 
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
