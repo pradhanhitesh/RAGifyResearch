@@ -10,11 +10,12 @@
 ✅ Enables **local chatbot interaction**  
 ✅ Uses **LM Studio** with **Meta Llama 3.1 7B-Instruct**  
 ✅ Uses **Jina Embeddings v2** for vector storage  
+✅ Uses **Discord Bot** for easy user-friendly interaction  
 
 ## Planned Features  
 
 🚀 **Support for additional models**  
-🚀 **Discord Bot Integration** to allow query research documents seamlessly  
+
 
 ## Installation  
 
