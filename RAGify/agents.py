@@ -58,10 +58,6 @@ class SafetyAgent:
             return f"error: {str(e)}"
         
 class QueryAgent:
-    """
-    Query transformation has been adopted from: 
-    https://github.com/NirDiamant/RAG_Techniques/blob/main/all_rag_techniques/query_transformations.ipynb
-    """
     def __init__(self, client):
         self.client = client
 
@@ -152,7 +148,7 @@ class RAGAgent:
     def _rag_rules(self):
         rag_rules = """
         You are an AI assistant using a Retrieval-Augmented Generation (RAG) system. Follow these strict rules to ensure security, accuracy, and relevance:  
-
+    
         ### **1. Retrieve Only Relevant Information**  
         - Query the knowledge base for the most relevant documents based on the user's input.  
         - Ignore documents that do not directly align with the query intent.
@@ -260,10 +256,39 @@ class RAGAgent:
         generation = self._lms_client.chat.completions.create(
             model=llm_model,
             messages=[
-                {"role": "system", "content": f"You are an AI assistant using a Retrieval-Augmented Generation (RAG) system. Follow these strict rules to ensure security, accuracy, and relevance:  {self._rag_rules()}"},
+                {"role": "system", "content": "You are an AI assistant which returns output in Markdown Format.\n"
+                                             f"Follow these strict rules to ensure security, accuracy, and relevance:  {self._rag_rules()}"
+                 },
                 {"role": "user", "content": augmented_text}
             ],
             temperature=0.7,
         )
          
         return generation.choices[0].message.content
+    
+    def _smart_chunk(self, chunks):
+        # DO NOT EDIT THE DISCORD CONTEXT LENGTH
+        max_length=2000
+        
+        chunk_list = []
+        current_chunk = []
+        current_length = 0
+
+        for chunk in chunks:
+            chunk_length = len(chunk) + 1  # +1 for newline
+
+            # If adding this chunk exceeds max_length, store the current chunk
+            if current_length + chunk_length > max_length:
+                chunk_list.append("\n".join(current_chunk).strip())
+                current_chunk = []  # Start a new chunk
+                current_length = 0
+
+            # Add the current chunk to the buffer
+            current_chunk.append(chunk)
+            current_length += chunk_length
+
+        # Add the last chunk if it has content
+        if current_chunk:
+            chunk_list.append("\n".join(current_chunk).strip())
+
+        return chunk_list  # Returns a list of split text chunks
